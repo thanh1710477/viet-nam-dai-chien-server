@@ -91,6 +91,35 @@ app.post("/forgot-password", async (req, res) => {
     }
 });
 
+app.post("/change-password", async (req, res) => {
+    try {
+        const { email, oldPassword, newPassword } = req.body;
+        if (!email || !oldPassword || !newPassword) {
+            return res.status(400).json({ error: "Vui lòng nhập đầy đủ thông tin." });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ error: "Email không tồn tại." });
+        }
+
+        // Kiểm tra mật khẩu cũ
+        if (user.password !== oldPassword) {
+            return res.status(401).json({ error: "Mật khẩu cũ không chính xác." });
+        }
+
+        // Cập nhật mật khẩu mới
+        user.password = newPassword;
+        await user.save();
+
+        console.log(`✅ Đã đổi mật khẩu cho: ${email}`);
+        res.json({ success: true, message: "Đổi mật khẩu thành công!" });
+    } catch (e) {
+        console.error("❌ Lỗi đổi mật khẩu:", e);
+        res.status(500).json({ error: "Lỗi Server khi đổi mật khẩu." });
+    }
+});
+
 // Create HTTP server
 const gameServer = new Server({
     server: createServer(app),
