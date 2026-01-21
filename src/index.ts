@@ -58,10 +58,10 @@ app.post("/forgot-password", async (req, res) => {
 // Create HTTP server
 const gameServer = new Server({
     server: createServer(app),
-    // Use Redis for presence (scaling across multiple processes/servers)
-    presence: new RedisPresence({
-        url: process.env.REDIS_URL || "redis://localhost:6379",
-    } as any),
+    // Use Redis for presence if configured, otherwise default to LocalPresence (in-memory)
+    presence: process.env.REDIS_URL ? new RedisPresence({
+        url: process.env.REDIS_URL,
+    } as any) : undefined,
     // Use MongoDB for driver (persistence)
     driver: new MongooseDriver(process.env.MONGO_URI || "mongodb://localhost:27017/colyseus_cloud"),
 });
