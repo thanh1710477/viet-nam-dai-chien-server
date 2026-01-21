@@ -1,0 +1,30 @@
+version: '3'
+services:
+  colyseus:
+    build: .
+    ports:
+      - "2567:2567"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - MONGO_URI=mongodb://mongo:27017/colyseus_cloud
+    depends_on:
+      - redis
+      - mongo
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
