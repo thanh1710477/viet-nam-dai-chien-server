@@ -15,12 +15,20 @@ mongoose.connection.on("error", (err) => console.error("❌ MongoDB Connection E
 mongoose.connection.on("disconnected", () => console.log("⚠️ MongoDB Disconnected"));
 
 // Explicitly connect to MongoDB
-const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/colyseus_cloud";
-console.log(`📡 Connecting to MongoDB... (URI starts with: ${mongoUri.substring(0, 15)}...)`);
+const mongoUri = (process.env.MONGO_URI || "mongodb://localhost:27017/colyseus_cloud").trim();
+console.log(`📡 Connecting to MongoDB... (URI prefix: ${mongoUri.substring(0, 15)}... , Length: ${mongoUri.length})`);
 
-mongoose.connect(mongoUri).catch(err => {
-    console.error("❌ Error during initial connection:", err);
+mongoose.connect(mongoUri, {
+    connectTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
+}).then(() => {
+    console.log("🚀 Mongoose connected explicitly!");
+}).catch(err => {
+    console.error("❌ Mongoose explicit connection failed:", err);
 });
+
+// Disable buffering to fail fast if connection is not ready
+mongoose.set('bufferCommands', false);
 
 const port = Number(process.env.PORT || 2567);
 const app = express();
@@ -77,7 +85,7 @@ const gameServer = new Server({
         url: process.env.REDIS_URL,
     } as any) : undefined,
     // Use MongoDB for driver (persistence)
-    driver: new MongooseDriver(process.env.MONGO_URI || "mongodb://localhost:27017/colyseus_cloud"),
+    driver: new MongooseDriver(mongoUri),
 });
 
 // Register Room handlers
