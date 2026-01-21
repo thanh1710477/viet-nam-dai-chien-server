@@ -8,7 +8,7 @@ import cors from "cors";
 import { MyRoom } from "./rooms/MyRoom";
 import User from "./models/User";
 import mongoose from "mongoose";
-import nodemailer from "nodemailer";
+import { Resend } from 'resend';
 
 // Connection logging
 mongoose.connection.on("connected", () => console.log("✅ MongoDB Connected Successfully!"));
@@ -34,25 +34,8 @@ mongoose.set('bufferCommands', false);
 const port = Number(process.env.PORT || 2567);
 const app = express();
 
-// Mail Transporter Setup
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
-
-// Verify transporter on startup
-transporter.verify((error, success) => {
-    if (error) {
-        console.error("❌ Email Transporter Error:", error);
-    } else {
-        console.log("🚀 Email Server is ready to send messages");
-    }
-});
+// Resend Email Setup
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.use(cors());
 app.use(express.json());
@@ -88,16 +71,19 @@ app.post("/forgot-password", async (req, res) => {
             return res.status(404).json({ error: "Email không tồn tại." });
         }
 
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
+        const { data, error } = await resend.emails.send({
+            from: 'Việt Nam Đại Chiến <onboarding@resend.dev>',
+            to: [email],
             subject: '[Việt Nam Đại Chiến] Khôi phục mật khẩu',
             text: `Xin chào,\n\nBạn đã yêu cầu khôi phục mật khẩu.\nMật khẩu của bạn là: ${user.password}\n\nVui lòng đổi mật khẩu sau khi đăng nhập thành công.\n\nTrân trọng,\nĐội ngũ Việt Nam Đại Chiến.`
-        };
+        });
 
-        await transporter.sendMail(mailOptions);
-        console.log(`✅ Email đã được gửi tới: ${email}`);
+        if (error) {
+            console.error("❌ Lỗi gửi email qua Resend:", error);
+            return res.status(500).json({ error: "Lỗi Server khi gửi email." });
+        }
 
+        console.log(`✅ Email đã được gửi thành công tới: ${email}`);
         res.json({ success: true, message: "Đã gửi email khôi phục mật khẩu." });
     } catch (e) {
         console.error("❌ Lỗi gửi email:", e);
