@@ -7,6 +7,13 @@ import express from "express";
 import cors from "cors";
 import { MyRoom } from "./rooms/MyRoom";
 import User from "./models/User";
+import mongoose from "mongoose";
+
+// Connection logging
+mongoose.connection.on("connected", () => console.log("✅ MongoDB Connected Successfully!"));
+mongoose.connection.on("error", (err) => console.error("❌ MongoDB Connection Error:", err));
+mongoose.connection.on("disconnected", () => console.log("⚠️ MongoDB Disconnected"));
+
 
 const port = Number(process.env.PORT || 2567);
 const app = express();
