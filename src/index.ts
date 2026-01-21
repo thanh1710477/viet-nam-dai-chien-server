@@ -8,6 +8,7 @@ import cors from "cors";
 import { MyRoom } from "./rooms/MyRoom";
 import User from "./models/User";
 import mongoose from "mongoose";
+import nodemailer from "nodemailer";
 
 // Connection logging
 mongoose.connection.on("connected", () => console.log("✅ MongoDB Connected Successfully!"));
@@ -32,6 +33,15 @@ mongoose.set('bufferCommands', false);
 
 const port = Number(process.env.PORT || 2567);
 const app = express();
+
+// Mail Transporter Setup
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
 app.use(cors());
 app.use(express.json());
@@ -67,13 +77,20 @@ app.post("/forgot-password", async (req, res) => {
             return res.status(404).json({ error: "Email không tồn tại." });
         }
 
-        // Mock gửi email
-        console.log(`[Email Mock] Gửi link reset mật khẩu tới: ${email}`);
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: '[Việt Nam Đại Chiến] Khôi phục mật khẩu',
+            text: `Xin chào,\n\nBạn đã yêu cầu khôi phục mật khẩu.\nMật khẩu của bạn là: ${user.password}\n\nVui lòng đổi mật khẩu sau khi đăng nhập thành công.\n\nTrân trọng,\nĐội ngũ Việt Nam Đại Chiến.`
+        };
 
-        res.json({ success: true, message: "Đã gửi yêu cầu reset mật khẩu." });
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Email đã được gửi tới: ${email}`);
+
+        res.json({ success: true, message: "Đã gửi email khôi phục mật khẩu." });
     } catch (e) {
-        console.error(e);
-        res.status(500).json({ error: "Lỗi Server." });
+        console.error("❌ Lỗi gửi email:", e);
+        res.status(500).json({ error: "Lỗi Server khi gửi email." });
     }
 });
 
