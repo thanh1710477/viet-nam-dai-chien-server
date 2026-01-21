@@ -61,7 +61,7 @@ const gameServer = new Server({
     // Use Redis for presence (scaling across multiple processes/servers)
     presence: new RedisPresence({
         url: process.env.REDIS_URL || "redis://localhost:6379",
-    }),
+    } as any),
     // Use MongoDB for driver (persistence)
     driver: new MongooseDriver(process.env.MONGO_URI || "mongodb://localhost:27017/colyseus_cloud"),
 });
