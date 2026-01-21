@@ -14,6 +14,13 @@ mongoose.connection.on("connected", () => console.log("✅ MongoDB Connected Suc
 mongoose.connection.on("error", (err) => console.error("❌ MongoDB Connection Error:", err));
 mongoose.connection.on("disconnected", () => console.log("⚠️ MongoDB Disconnected"));
 
+// Explicitly connect to MongoDB
+const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/colyseus_cloud";
+console.log(`📡 Connecting to MongoDB... (URI starts with: ${mongoUri.substring(0, 15)}...)`);
+
+mongoose.connect(mongoUri).catch(err => {
+    console.error("❌ Error during initial connection:", err);
+});
 
 const port = Number(process.env.PORT || 2567);
 const app = express();
