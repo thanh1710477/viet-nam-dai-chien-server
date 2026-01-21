@@ -72,7 +72,7 @@ app.post("/forgot-password", async (req, res) => {
         }
 
         const { data, error } = await resend.emails.send({
-            from: 'Việt Nam Đại Chiến <onboarding@resend.dev>',
+            from: 'Việt Nam Đại Chiến <admin@jqka.io.vn>',
             to: [email],
             subject: '[Việt Nam Đại Chiến] Khôi phục mật khẩu',
             text: `Xin chào,\n\nBạn đã yêu cầu khôi phục mật khẩu.\nMật khẩu của bạn là: ${user.password}\n\nVui lòng đổi mật khẩu sau khi đăng nhập thành công.\n\nTrân trọng,\nĐội ngũ Việt Nam Đại Chiến.`
