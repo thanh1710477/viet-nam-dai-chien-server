@@ -43,6 +43,15 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Verify transporter on startup
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("❌ Email Transporter Error:", error);
+    } else {
+        console.log("🚀 Email Server is ready to send messages");
+    }
+});
+
 app.use(cors());
 app.use(express.json());
 
