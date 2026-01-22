@@ -1,5 +1,6 @@
 import { Room, Client, ServerError } from "colyseus";
-import User from "../models/User";
+import User, { IUser } from "../models/User";
+import { MyRoomState } from "./schema/MyRoomState";
 
 export class MyRoom extends Room {
     maxClients = 4;
@@ -18,10 +19,11 @@ export class MyRoom extends Room {
             throw new ServerError(401, "Sai mật khẩu.");
         }
 
-        return true;
+        return user;
     }
 
     onCreate(options: any) {
+        this.setState(new MyRoomState());
         console.log("MyRoom created!", options);
 
         this.onMessage("type", (client, message) => {
@@ -33,8 +35,14 @@ export class MyRoom extends Room {
         });
     }
 
-    onJoin(client: Client, options: any) {
+    onJoin(client: Client, options: any, auth: any) {
         console.log(client.sessionId, "joined!");
+
+        // Gán thông tin người chơi mới vào state
+        if (auth && auth.isNewUser !== undefined) {
+            this.state.isNewPlayer = auth.isNewUser;
+        }
+
         this.broadcast("messages", `${client.sessionId} joined.`);
     }
 
