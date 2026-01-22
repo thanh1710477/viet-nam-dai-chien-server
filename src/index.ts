@@ -122,13 +122,11 @@ app.post("/change-password", async (req, res) => {
 
 // Create HTTP server
 const gameServer = new Server({
-    server: createServer(app),
-    // Use Redis for presence if configured, otherwise default to LocalPresence (in-memory)
     presence: process.env.REDIS_URL ? new RedisPresence({
         url: process.env.REDIS_URL,
     } as any) : undefined,
-    // Use MongoDB for driver (persistence)
     driver: new MongooseDriver(mongoUri),
+    server: createServer(app),
 });
 
 // Register Room handlers
