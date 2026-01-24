@@ -43,7 +43,9 @@ app.use(express.json());
 // API Routes
 app.post("/register", async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const email = req.body.email.toLowerCase().trim();
+        const password = req.body.password;
+
         if (!email || !password) {
             return res.status(400).json({ error: "Thiếu email hoặc mật khẩu." });
         }
@@ -65,7 +67,7 @@ app.post("/register", async (req, res) => {
 
 app.post("/forgot-password", async (req, res) => {
     try {
-        const { email } = req.body;
+        const email = req.body.email.toLowerCase().trim();
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ error: "Email không tồn tại." });
@@ -93,7 +95,9 @@ app.post("/forgot-password", async (req, res) => {
 
 app.post("/change-password", async (req, res) => {
     try {
-        const { email, oldPassword, newPassword } = req.body;
+        const email = req.body.email.toLowerCase().trim();
+        const { oldPassword, newPassword } = req.body;
+
         if (!email || !oldPassword || !newPassword) {
             return res.status(400).json({ error: "Vui lòng nhập đầy đủ thông tin." });
         }
